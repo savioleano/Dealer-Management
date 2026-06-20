@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import CityAutocomplete from '@/components/CityAutocomplete'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -91,8 +92,24 @@ export default function NewDealerForm({ managers }: { managers: Manager[] }) {
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" required />
           </div>
           <TextField label="Email Address" type="email" value={form.email} onChange={(v) => update('email', v)} required />
-          <TextField label="Main City" value={form.mainCity} onChange={(v) => update('mainCity', v)} required />
-          <TextField label="District" value={form.district} onChange={(v) => update('district', v)} required />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Main City</label>
+            <CityAutocomplete
+              value={form.mainCity}
+              onChange={(city, district) => setForm((f) => ({ ...f, mainCity: city, district }))}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+            <input
+              type="text"
+              value={form.district}
+              readOnly
+              placeholder="Auto-filled from city"
+              className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 focus:outline-none"
+            />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
