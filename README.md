@@ -1,36 +1,104 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Retail IT — Dealer Management Portal
 
-## Getting Started
+A web-based dealer management portal built with Next.js 16 (App Router), Prisma 7, NextAuth v5, and Tailwind CSS 4.
 
-First, run the development server:
+## Roles
+
+- **DEALER** — places orders, tracks stock, logs daily sales, views own profile & bank guarantee.
+- **MANAGER** — approves orders, dispatches/delivers, sees all dealers' stock & sales reports.
+
+## Tech stack
+
+| Concern        | Choice                                        |
+| -------------- | --------------------------------------------- |
+| Framework      | Next.js 16 (App Router, Turbopack)            |
+| Database       | PostgreSQL via Prisma 7 (`pg` driver adapter) |
+| Auth           | NextAuth v5 (Credentials, JWT sessions)       |
+| Styling        | Tailwind CSS 4                                |
+| Deploy target  | Vercel                                        |
+
+## Local setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Provide a PostgreSQL database
+
+For local development, the easiest path is Prisma's built-in local Postgres server:
+
+```bash
+npx prisma dev
+```
+
+Leave it running. It prints a `DATABASE_URL` (and `SHADOW_DATABASE_URL`) — copy them into `.env`.
+Alternatively, point `DATABASE_URL` at any Postgres instance (local install, Docker, Neon, Supabase, etc.).
+
+### 3. Configure environment
+
+Copy `.env.example` to `.env` and fill in:
+
+```
+DATABASE_URL="postgres://..."
+NEXTAUTH_SECRET="<random-string>"
+AUTH_SECRET="<random-string>"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 4. Sync schema & seed
+
+```bash
+npx prisma db push     # or: npx prisma migrate dev --name init  (needs a shadow DB)
+npm run db:seed
+```
+
+### 5. Run
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 and sign in.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Seeded login credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role    | Email                   | Password    |
+| ------- | ----------------------- | ----------- |
+| Manager | manager@retailit.lk     | manager123  |
+| Dealer  | dealer1@retailit.lk     | dealer123   |
+| Dealer  | dealer2@retailit.lk     | dealer123   |
+| Dealer  | dealer3@retailit.lk     | dealer123   |
+| Dealer  | dealer4@retailit.lk     | dealer123   |
 
-## Learn More
+## Business rules
 
-To learn more about Next.js, take a look at the following resources:
+- **First order** per dealer is covered by the bank guarantee (payment `WAIVED`).
+- **Subsequent orders** must have payment `CONFIRMED` before they can be dispatched.
+- **Dispatch** auto-increments the dealer's stock for each order line.
+- **Sales log submission** auto-decrements the dealer's stock and is validated against available quantity.
+- **Bank guarantee utilization** = sum of order values against a 1,000,000 LKR limit per dealer.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/
+  login/            # shared login page
+  dealer/           # DEALER portal (dashboard, orders, stock, sales, profile)
+  manager/          # MANAGER portal (dashboard, order queue/detail, stock, reports)
+  api/              # route handlers (auth, dealer orders/sales, manager order actions)
+auth.ts             # full NextAuth config (Node runtime, Prisma-backed)
+auth.config.ts      # edge-safe config used by proxy.ts (no Prisma)
+proxy.ts            # route protection + role-based redirects (Next.js 16 "proxy", formerly middleware)
+lib/prisma.ts       # Prisma client with pg driver adapter
+prisma/
+  schema.prisma     # data models
+  seed.ts           # seed script
+```
 
-## Deploy on Vercel
+## Deploying to Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push to a Git repo and import into Vercel.
+2. Set env vars (`DATABASE_URL`, `NEXTAUTH_SECRET`, `AUTH_SECRET`, `NEXTAUTH_URL`) in the Vercel dashboard. Point `DATABASE_URL` at a hosted Postgres (Neon, Supabase, Prisma Postgres, etc.).
+3. Run `npx prisma db push` (or migrations) against the production database, then seed if desired.

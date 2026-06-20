@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DEALER
+  MANAGER
+  ADMIN
+}
+
+enum DealerStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_REVIEW
+  PENDING_PAYMENT_CONFIRMATION
+  PENDING_PAYMENT_APPROVAL
+  PREPARING
+  DISPATCHED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  WAIVED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  BANK_DEPOSIT
+  CHEQUE_DEPOSIT
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  password       String
+  role           Role
+  phone          String?
+  dealerId       String?
+  dealer         Dealer?  @relation(fields: [dealerId], references: [id])
+  managedDealers Dealer[] @relation("ManagedDealers")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Dealer {
+  id                 String       @id @default(cuid())
+  name               String
+  contactPerson      String       // Owner (Name)
+  phone              String       // Contact number 1
+  phone2             String?      // Contact number 2
+  operationalContactPerson String?
+  operationalContactNumber String?
+  email              String       @unique
+  address            String
+  mainCity           String?
+  district           String?
+  businessRegNo      String       @unique
+  bankGuaranteeValue Float        @default(1000000)
+  bankGuaranteeUsed  Float        @default(0)
+  onboardingDate     DateTime     @default(now())
+  status             DealerStatus @default(ACTIVE)
+  managerId          String
+  manager            User         @relation("ManagedDealers", fields: [managerId], references: [id])
+  users              User[]
+  orders             Order[]
+  stocks             Stock[]
+  salesLogs          SalesLog[]
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Product {
+  id           String         @id @default(cuid())
+  name         String         @unique
+  category     String
+  dealerPrice  Float
+  sellingPrice Float
+  orderLines   OrderLine[]
+  stocks     Stock[]
+  salesLines SalesLogLine[]
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+}
+
+model Order {
+  id               String         @id @default(cuid())
+  dealerId         String
+  dealer           Dealer         @relation(fields: [dealerId], references: [id])
+  status           OrderStatus    @default(PENDING_REVIEW)
+  paymentStatus    PaymentStatus  @default(PENDING)
+  notes            String?
+  managerNote      String?
+  deliveryAddress  String
+  // Payment details submitted by the dealer
+  paymentMethod    PaymentMethod?
+  paymentDate      DateTime?
+  paymentReference String?
+  paymentSlipUrl   String?
+  paymentSubmittedAt DateTime?
+  lines            OrderLine[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model OrderLine {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  unitPrice Float
+}
+
+model Stock {
+  id        String   @id @default(cuid())
+  dealerId  String
+  dealer    Dealer   @relation(fields: [dealerId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([dealerId, productId])
+}
+
+model SalesLog {
+  id        String         @id @default(cuid())
+  dealerId  String
+  dealer    Dealer         @relation(fields: [dealerId], references: [id])
+  date      DateTime
+  lines     SalesLogLine[]
+  createdAt DateTime       @default(now())
+}
+
+model SalesLogLine {
+  id           String   @id @default(cuid())
+  salesLogId   String
+  salesLog     SalesLog @relation(fields: [salesLogId], references: [id], onDelete: Cascade)
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id])
+  unitsSold    Int
+  sellingPrice Float
+}
