@@ -1,0 +1,7 @@
+# Never upload local env files — Vercel injects env vars from its own settings.
+.env
+.env.local
+.env.*.local
+
+# Local-only artifacts
+/public/uploads
