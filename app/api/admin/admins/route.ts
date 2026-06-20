@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { isAdmin } from '@/lib/access'
+import { isSuperAdmin } from '@/lib/access'
 
+// Creating ADMIN users is exclusive to SUPER_ADMIN.
 export async function POST(req: NextRequest) {
   const session = await auth()
-  if (!session || !isAdmin(session.user.role)) {
+  if (!session || !isSuperAdmin(session.user.role)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -23,10 +24,10 @@ export async function POST(req: NextRequest) {
   if (exists) return NextResponse.json({ error: 'A user with this email already exists' }, { status: 409 })
 
   const hashed = await bcrypt.hash(password, 10)
-  const manager = await prisma.user.create({
-    data: { name, email, phone: phone || null, password: hashed, role: 'MANAGER' },
+  const admin = await prisma.user.create({
+    data: { name, email, phone: phone || null, password: hashed, role: 'ADMIN' },
     select: { id: true, name: true, email: true },
   })
 
-  return NextResponse.json(manager, { status: 201 })
+  return NextResponse.json(admin, { status: 201 })
 }

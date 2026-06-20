@@ -4,8 +4,23 @@ A web-based dealer management portal built with Next.js 16 (App Router), Prisma 
 
 ## Roles
 
+Hierarchy: **SUPER_ADMIN > ADMIN > MANAGER > DEALER**
+
 - **DEALER** — places orders, tracks stock, logs daily sales, views own profile & bank guarantee.
-- **MANAGER** — approves orders, dispatches/delivers, sees all dealers' stock & sales reports.
+- **MANAGER** — approves orders, dispatches/delivers, sees their own dealers' stock & sales; creates Dealers.
+- **ADMIN** — full access across all managers' data; creates Managers and Dealers. Cannot create other Admins.
+- **SUPER_ADMIN** — everything an Admin can do, **plus** the exclusive ability to create Admin users (Manage Admins). The first Super Admin is seeded as `admin@retailit.lk` (`npm run db:seed:admin`).
+
+Permission matrix:
+
+| Capability | DEALER | MANAGER | ADMIN | SUPER_ADMIN |
+| --- | :---: | :---: | :---: | :---: |
+| Own orders / stock / sales | ✓ | — | — | — |
+| Manage own dealers | — | ✓ | ✓ (all) | ✓ (all) |
+| Approve orders / dispatch | — | ✓ | ✓ | ✓ |
+| Create Dealers | — | ✓ | ✓ | ✓ |
+| Create Managers | — | — | ✓ | ✓ |
+| Create Admins | — | — | — | ✓ |
 
 ## Tech stack
 

@@ -6,6 +6,7 @@ import { authConfig } from './auth.config'
 const { auth } = NextAuth(authConfig)
 
 const HOME: Record<string, string> = {
+  SUPER_ADMIN: '/admin',
   ADMIN: '/admin',
   MANAGER: '/manager',
   DEALER: '/dealer',
@@ -29,6 +30,7 @@ export default auth((req) => {
 
   // Which areas each role may enter. Admin has full access (admin + manager areas).
   const allowedAreas: Record<string, string[]> = {
+    SUPER_ADMIN: ['ADMIN', 'MANAGER'],
     ADMIN: ['ADMIN', 'MANAGER'],
     MANAGER: ['MANAGER'],
     DEALER: ['DEALER'],

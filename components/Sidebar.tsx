@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 interface SidebarProps {
-  role: 'DEALER' | 'MANAGER' | 'ADMIN'
+  role: 'DEALER' | 'MANAGER' | 'ADMIN' | 'SUPER_ADMIN'
   userName: string
 }
 
@@ -45,16 +45,25 @@ const adminNav: NavItem[] = [
   { href: '/manager/products', label: 'Manage Products', icon: '🏷️' },
 ]
 
+// Super Admin sees everything an Admin does, plus "Manage Admins".
+const superAdminNav: NavItem[] = [
+  ...adminNav.slice(0, 1),
+  { href: '/admin/admins', label: 'Manage Admins', icon: '🛡️' },
+  ...adminNav.slice(1),
+]
+
 const navByRole: Record<SidebarProps['role'], NavItem[]> = {
   DEALER: dealerNav,
   MANAGER: managerNav,
   ADMIN: adminNav,
+  SUPER_ADMIN: superAdminNav,
 }
 
 const homeHref: Record<SidebarProps['role'], string> = {
   DEALER: '/dealer',
   MANAGER: '/manager',
   ADMIN: '/admin',
+  SUPER_ADMIN: '/admin',
 }
 
 export default function Sidebar({ role, userName }: SidebarProps) {

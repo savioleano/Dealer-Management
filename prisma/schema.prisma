@@ -10,6 +10,7 @@ enum Role {
   DEALER
   MANAGER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum DealerStatus {

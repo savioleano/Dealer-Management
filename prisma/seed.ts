@@ -27,14 +27,14 @@ async function main() {
     where: { email: 'admin@retailit.lk' },
     update: {},
     create: {
-      name: 'Savio Admin',
+      name: 'Savio Super Admin',
       email: 'admin@retailit.lk',
       phone: '0770000000',
       password: adminPassword,
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
     },
   })
-  console.log('✓ Admin seeded')
+  console.log('✓ Super Admin seeded')
 
   // Manager
   const managerPassword = await bcrypt.hash('manager123', 10)
