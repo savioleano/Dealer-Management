@@ -66,6 +66,13 @@ const homeHref: Record<SidebarProps['role'], string> = {
   SUPER_ADMIN: '/admin',
 }
 
+const roleLabel: Record<SidebarProps['role'], string> = {
+  DEALER: 'Dealer',
+  MANAGER: 'Manager',
+  ADMIN: 'Admin',
+  SUPER_ADMIN: 'Super Admin',
+}
+
 export default function Sidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname()
   const nav = navByRole[role]
@@ -97,6 +104,7 @@ export default function Sidebar({ role, userName }: SidebarProps) {
       </nav>
 
       <div className="px-4 py-4 border-t border-blue-900">
+        <p className="text-sm font-medium text-white truncate">{roleLabel[role]}</p>
         <p className="text-xs text-blue-400 truncate mb-2">{userName}</p>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
