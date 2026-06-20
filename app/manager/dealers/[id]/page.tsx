@@ -36,6 +36,8 @@ export default async function EditDealerPage({ params }: { params: Promise<{ id:
           address: dealer.address,
           mainCity: dealer.mainCity ?? '',
           district: dealer.district ?? '',
+          latitude: dealer.latitude?.toString() ?? '',
+          longitude: dealer.longitude?.toString() ?? '',
           businessRegNo: dealer.businessRegNo,
           bankGuaranteeValue: dealer.bankGuaranteeValue,
           bankGuaranteeUsed: dealer.bankGuaranteeUsed,

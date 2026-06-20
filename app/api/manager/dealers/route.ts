@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { DealerStatus } from '@prisma/client'
+import { validateCoords, isValidDealerStatus } from '@/lib/dealer'
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -23,6 +25,9 @@ export async function POST(req: NextRequest) {
     phone2, // Contact number 2
     operationalContactPerson,
     operationalContactNumber,
+    status,
+    latitude,
+    longitude,
     loginPassword,
   } = body
 
@@ -32,6 +37,10 @@ export async function POST(req: NextRequest) {
   if (!loginPassword || loginPassword.length < 6) {
     return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
   }
+
+  const coord = validateCoords(latitude, longitude)
+  if ('error' in coord) return NextResponse.json({ error: coord.error }, { status: 400 })
+  const dealerStatus = isValidDealerStatus(status) ? status : 'ACTIVE'
 
   // The dealer's email is also their login email.
   const [emailTaken, regTaken, userTaken] = await Promise.all([
@@ -59,6 +68,9 @@ export async function POST(req: NextRequest) {
         address,
         mainCity,
         district,
+        latitude: coord.lat,
+        longitude: coord.lng,
+        status: dealerStatus as DealerStatus,
         businessRegNo,
         onboardingDate: onboarding,
         managerId: session.user.id,

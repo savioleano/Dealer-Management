@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import CityAutocomplete from '@/components/CityAutocomplete'
+import LocationPreview from '@/components/LocationPreview'
+import { DEALER_STATUSES } from '@/lib/dealer'
 
 const today = new Date().toISOString().split('T')[0]
 
@@ -21,6 +23,9 @@ export default function NewDealerForm() {
     phone2: '', // Contact number 2
     operationalContactPerson: '',
     operationalContactNumber: '',
+    status: 'ACTIVE',
+    latitude: '',
+    longitude: '',
     loginPassword: '',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -30,15 +35,33 @@ export default function NewDealerForm() {
     setForm({ ...form, [field]: value })
   }
 
+  const latNum = form.latitude === '' ? null : Number(form.latitude)
+  const lngNum = form.longitude === '' ? null : Number(form.longitude)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    // Validate coordinates if provided.
+    if ((form.latitude === '') !== (form.longitude === '')) {
+      setError('Enter both latitude and longitude, or leave both blank.')
+      return
+    }
+    if (latNum !== null && (Number.isNaN(latNum) || latNum < -90 || latNum > 90)) {
+      setError('Latitude must be a number between -90 and 90.')
+      return
+    }
+    if (lngNum !== null && (Number.isNaN(lngNum) || lngNum < -180 || lngNum > 180)) {
+      setError('Longitude must be a number between -180 and 180.')
+      return
+    }
+
     setSubmitting(true)
     setError('')
 
     const res = await fetch('/api/manager/dealers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, latitude: latNum, longitude: lngNum }),
     })
 
     if (!res.ok) {
@@ -104,6 +127,37 @@ export default function NewDealerForm() {
           <TextField label="Operational Contact Person" value={form.operationalContactPerson} onChange={(v) => update('operationalContactPerson', v)} />
           <TextField label="Contact Number" value={form.operationalContactNumber} onChange={(v) => update('operationalContactNumber', v)} />
         </div>
+      </div>
+
+      {/* Location & Status */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 className="font-semibold text-gray-800">Location & Status</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select value={form.status} onChange={(e) => update('status', e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
+              {DEALER_STATUSES.map((s) => <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+            <input type="number" step="any" min={-90} max={90} value={form.latitude}
+              onChange={(e) => update('latitude', e.target.value)} placeholder="e.g. 6.9271"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+            <input type="number" step="any" min={-180} max={180} value={form.longitude}
+              onChange={(e) => update('longitude', e.target.value)} placeholder="e.g. 79.8612"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+        <p className="text-xs text-gray-400">
+          Tip: right-click the location on Google Maps and click the coordinates to copy them, then paste here.
+          Status controls the pin color on the Map (Active = green, Planned = orange).
+        </p>
+        <LocationPreview lat={latNum} lng={lngNum} />
       </div>
 
       {/* Login Account */}

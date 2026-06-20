@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { DealerStatus } from '@prisma/client'
 import { isStaff, dealerScope } from '@/lib/access'
+import { validateCoords } from '@/lib/dealer'
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -24,6 +25,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     address,
     mainCity,
     district,
+    latitude,
+    longitude,
     businessRegNo,
     bankGuaranteeValue,
     status,
@@ -35,6 +38,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     include: { users: { where: { role: 'DEALER' }, select: { id: true } } },
   })
   if (!dealer) return NextResponse.json({ error: 'Dealer not found' }, { status: 404 })
+
+  const coord = validateCoords(latitude, longitude)
+  if ('error' in coord) return NextResponse.json({ error: coord.error }, { status: 400 })
 
   if (bankGuaranteeValue != null && bankGuaranteeValue < dealer.bankGuaranteeUsed) {
     return NextResponse.json(
@@ -71,6 +77,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         address,
         mainCity,
         district,
+        latitude: coord.lat,
+        longitude: coord.lng,
         businessRegNo,
         bankGuaranteeValue,
         status: status as DealerStatus,

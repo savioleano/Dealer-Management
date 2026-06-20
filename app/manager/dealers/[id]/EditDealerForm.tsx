@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import LocationPreview from '@/components/LocationPreview'
+import { DEALER_STATUSES } from '@/lib/dealer'
 
 interface Dealer {
   id: string
@@ -15,6 +17,8 @@ interface Dealer {
   address: string
   mainCity: string
   district: string
+  latitude: string
+  longitude: string
   businessRegNo: string
   bankGuaranteeValue: number
   bankGuaranteeUsed: number
@@ -44,6 +48,8 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
     address: dealer.address,
     mainCity: dealer.mainCity,
     district: dealer.district,
+    latitude: dealer.latitude,
+    longitude: dealer.longitude,
     businessRegNo: dealer.businessRegNo,
     bankGuaranteeValue: dealer.bankGuaranteeValue,
     status: dealer.status,
@@ -57,8 +63,25 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
     setForm({ ...form, [field]: value })
   }
 
+  const latNum = form.latitude === '' ? null : Number(form.latitude)
+  const lngNum = form.longitude === '' ? null : Number(form.longitude)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if ((form.latitude === '') !== (form.longitude === '')) {
+      setError('Enter both latitude and longitude, or leave both blank.')
+      return
+    }
+    if (latNum !== null && (Number.isNaN(latNum) || latNum < -90 || latNum > 90)) {
+      setError('Latitude must be a number between -90 and 90.')
+      return
+    }
+    if (lngNum !== null && (Number.isNaN(lngNum) || lngNum < -180 || lngNum > 180)) {
+      setError('Longitude must be a number between -180 and 180.')
+      return
+    }
+
     setSaving(true)
     setError('')
     setSuccess('')
@@ -66,7 +89,7 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
     const res = await fetch(`/api/manager/dealers/${dealer.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, newPassword: newPassword || undefined }),
+      body: JSON.stringify({ ...form, latitude: latNum, longitude: lngNum, newPassword: newPassword || undefined }),
     })
 
     if (!res.ok) {
@@ -100,9 +123,7 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
               onChange={(e) => update('status', e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
-              <option value="SUSPENDED">SUSPENDED</option>
+              {DEALER_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
@@ -116,6 +137,27 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
             required
           />
         </div>
+      </div>
+
+      {/* Location */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
+        <h2 className="font-semibold text-gray-800">Location</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+            <input type="number" step="any" min={-90} max={90} value={form.latitude}
+              onChange={(e) => update('latitude', e.target.value)} placeholder="e.g. 6.9271"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+            <input type="number" step="any" min={-180} max={180} value={form.longitude}
+              onChange={(e) => update('longitude', e.target.value)} placeholder="e.g. 79.8612"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
+          </div>
+        </div>
+        <p className="text-xs text-gray-400">Right-click the location on Google Maps and click the coordinates to copy them.</p>
+        <LocationPreview lat={latNum} lng={lngNum} />
       </div>
 
       {/* Contacts */}

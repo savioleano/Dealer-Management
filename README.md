@@ -42,10 +42,27 @@ Copy `.env.example` to `.env` and fill in:
 
 ```
 DATABASE_URL="postgres://..."
-NEXTAUTH_SECRET="<random-string>"
 AUTH_SECRET="<random-string>"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="<your-google-maps-js-api-key>"
 ```
+
+### Google Maps API key
+
+The **Map** page and the Add Dealer location preview use the Google Maps
+JavaScript API. Create a key in the Google Cloud Console with the **Maps
+JavaScript API** enabled, then set it as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`:
+
+- **Local:** add it to `.env`.
+- **Production (Vercel):** add `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` in
+  Project → Settings → Environment Variables, then redeploy.
+
+> Note: this is a `NEXT_PUBLIC_*` variable, so it is embedded in the client
+> bundle **at build time** — after adding/changing it you must redeploy.
+> Restrict the key to your domains (HTTP referrers) in Google Cloud.
+
+Without a key, the map areas show a "key not configured" message; the rest of
+the app works normally.
 
 ### 4. Sync schema & seed
 

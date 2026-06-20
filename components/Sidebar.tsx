@@ -26,6 +26,7 @@ const dealerNav: NavItem[] = [
 
 const managerNav: NavItem[] = [
   { href: '/manager', label: 'Dashboard', icon: '◼' },
+  { href: '/manager/map', label: 'Map', icon: '🗺️' },
   { href: '/manager/orders', label: 'Order Queue', icon: '📋' },
   { href: '/manager/stock', label: 'Dealer Stock', icon: '📦' },
   { href: '/manager/sales', label: 'Sales Reports', icon: '📊' },
@@ -35,6 +36,7 @@ const managerNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: '◼' },
+  { href: '/manager/map', label: 'Map', icon: '🗺️' },
   { href: '/admin/managers', label: 'Manage Managers', icon: '👔' },
   { href: '/admin/dealers', label: 'Manage Dealers', icon: '🏢' },
   { href: '/manager/orders', label: 'Order Queue', icon: '📋' },
