@@ -121,6 +121,12 @@ export default function Sidebar({ role, userName }: SidebarProps) {
       <div className="px-4 py-4 border-t border-gray-200">
         <p className="text-sm font-medium text-gray-900 truncate">{roleLabel[role]}</p>
         <p className="text-xs text-gray-500 truncate mb-2">{userName}</p>
+        <Link
+          href="/account/password"
+          className="block text-xs text-gray-500 hover:text-gray-900 transition-colors mb-1.5"
+        >
+          Change password
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="w-full text-left text-xs text-gray-500 hover:text-gray-900 transition-colors"
