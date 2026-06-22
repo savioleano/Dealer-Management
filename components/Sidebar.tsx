@@ -45,11 +45,17 @@ const adminNav: NavItem[] = [
   { href: '/manager/products', label: 'Manage Products', icon: '🏷️' },
 ]
 
-// Super Admin sees everything an Admin does, plus "Manage Admins" (below Map).
+// Super Admin: same as Admin, but the separate "Manage Managers" is replaced
+// by a single "User Management" (Admins + Managers) below Map.
 const superAdminNav: NavItem[] = [
-  ...adminNav.slice(0, 2),
-  { href: '/admin/admins', label: 'Manage Admins', icon: '🛡️' },
-  ...adminNav.slice(2),
+  { href: '/admin', label: 'Dashboard', icon: '◼' },
+  { href: '/manager/map', label: 'Map', icon: '🗺️' },
+  { href: '/admin/users', label: 'User Management', icon: '👥' },
+  { href: '/admin/dealers', label: 'Manage Dealers', icon: '🏢' },
+  { href: '/manager/orders', label: 'Order Queue', icon: '📋' },
+  { href: '/manager/stock', label: 'Dealer Stock', icon: '📦' },
+  { href: '/manager/sales', label: 'Sales Reports', icon: '📊' },
+  { href: '/manager/products', label: 'Manage Products', icon: '🏷️' },
 ]
 
 const navByRole: Record<SidebarProps['role'], NavItem[]> = {
