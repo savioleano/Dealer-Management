@@ -200,14 +200,17 @@ export default function EditDealerForm({ dealer, login }: { dealer: Dealer; logi
         <h2 className="font-semibold text-gray-800">Login Account</h2>
         {login ? (
           <>
+            <p className="text-xs text-gray-500">
+              The dealer logs in with the business name &amp; email above — these stay in sync automatically.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Login Name</p>
-                <p className="text-gray-800 font-medium">{login.name}</p>
+                <p className="text-gray-800 font-medium">{form.name || '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Login Email</p>
-                <p className="text-gray-800 font-medium">{login.email}</p>
+                <p className="text-gray-800 font-medium">{form.email || '—'}</p>
               </div>
             </div>
             <div>

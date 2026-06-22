@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const dealer = await prisma.dealer.findFirst({
     where: { id, ...dealerScope(session) },
-    include: { users: { where: { role: 'DEALER' }, select: { id: true } } },
+    include: { users: { where: { role: 'DEALER' }, select: { id: true, email: true } } },
   })
   if (!dealer) return NextResponse.json({ error: 'Dealer not found' }, { status: 404 })
 
@@ -49,15 +49,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     )
   }
 
-  const loginUserId = dealer.users[0]?.id
+  const loginUser = dealer.users[0]
 
   // Uniqueness checks (exclude this dealer / its own login user)
   if (email && email !== dealer.email) {
     const taken = await prisma.dealer.findUnique({ where: { email } })
     if (taken) return NextResponse.json({ error: 'Business email already in use' }, { status: 409 })
-    // The dealer's email is also their login email — make sure no other user has it.
+  }
+  // The dealer's email is also their login email — ensure no OTHER user holds it.
+  if (email && loginUser && email !== loginUser.email) {
     const userTaken = await prisma.user.findUnique({ where: { email } })
-    if (userTaken && userTaken.id !== loginUserId) {
+    if (userTaken && userTaken.id !== loginUser.id) {
       return NextResponse.json({ error: 'A user with this email already exists' }, { status: 409 })
     }
   }
@@ -92,13 +94,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       },
     })
 
-    // Keep the dealer's login (User) in sync — email is the login, password optional.
-    if (loginUserId) {
-      const userData: { email?: string; password?: string } = {}
-      if (email && email !== dealer.email) userData.email = email
+    // Keep the dealer's login (User) in sync with the business fields:
+    // login name = dealer name, login email = business email. Password optional.
+    if (loginUser) {
+      const userData: { name?: string; email?: string; password?: string } = {}
+      if (name) userData.name = name
+      if (email) userData.email = email
       if (newPassword) userData.password = await bcrypt.hash(newPassword, 10)
       if (Object.keys(userData).length > 0) {
-        await tx.user.update({ where: { id: loginUserId }, data: userData })
+        await tx.user.update({ where: { id: loginUser.id }, data: userData })
       }
     }
   })

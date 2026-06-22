@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     })
 
     await tx.user.create({
-      data: { name: contactPerson, email, password: hashed, role: 'DEALER', dealerId: created.id },
+      data: { name, email, password: hashed, role: 'DEALER', dealerId: created.id },
     })
 
     return created
