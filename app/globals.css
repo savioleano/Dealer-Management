@@ -24,3 +24,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/*
+ * Form fields must never rely on inherited color/background. Without this,
+ * OS dark mode / high-contrast / browser extensions can override the inherited
+ * text color and make typed input invisible. Placed in @layer base so explicit
+ * Tailwind utility colors (e.g. bg-gray-50 / text-gray-600 on read-only fields)
+ * still take precedence; this only supplies the default for fields that don't
+ * set their own.
+ */
+@layer base {
+  input,
+  select,
+  textarea {
+    color: #111827; /* gray-900 — always readable */
+    background-color: #ffffff; /* white field background */
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af; /* gray-400 */
+  }
+
+  /* Keep the option list readable when a <select> is opened. */
+  option {
+    color: #111827;
+    background-color: #ffffff;
+  }
+}
