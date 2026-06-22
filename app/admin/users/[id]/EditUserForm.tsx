@@ -11,9 +11,15 @@ interface User {
   role: string
 }
 
-export default function EditUserForm({ user }: { user: User }) {
+const ROLE_OPTIONS = [
+  { value: 'SUPER_ADMIN', label: 'Super Admin' },
+  { value: 'ADMIN', label: 'Admin' },
+  { value: 'MANAGER', label: 'Manager' },
+]
+
+export default function EditUserForm({ user, isSelf }: { user: User; isSelf: boolean }) {
   const router = useRouter()
-  const [form, setForm] = useState({ name: user.name, email: user.email, phone: user.phone })
+  const [form, setForm] = useState({ name: user.name, email: user.email, phone: user.phone, role: user.role })
   const [newPassword, setNewPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -48,8 +54,30 @@ export default function EditUserForm({ user }: { user: User }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
-        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">User Level: {user.role}</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            {isSelf ? (
+              <>
+                <input
+                  type="text"
+                  value={ROLE_OPTIONS.find((r) => r.value === form.role)?.label ?? form.role}
+                  readOnly
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600"
+                />
+                <p className="text-xs text-gray-400 mt-1">You cannot change your own role.</p>
+              </>
+            ) : (
+              <select
+                value={form.role}
+                onChange={(e) => update('role', e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              >
+                {ROLE_OPTIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            )}
+          </div>
+          <div className="hidden sm:block" />
           <Field label="Name" value={form.name} onChange={(v) => update('name', v)} required />
           <Field label="Contact Number" value={form.phone} onChange={(v) => update('phone', v)} />
           <Field label="Email Address" type="email" value={form.email} onChange={(v) => update('email', v)} required />

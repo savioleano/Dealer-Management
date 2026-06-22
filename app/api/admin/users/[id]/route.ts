@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { isSuperAdmin } from '@/lib/access'
+import { Role } from '@prisma/client'
 
 const MANAGEABLE = ['ADMIN', 'MANAGER', 'SUPER_ADMIN']
 
@@ -13,9 +14,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params
-  const { name, email, phone, newPassword } = await req.json()
+  const { name, email, phone, newPassword, role } = await req.json()
 
-  const user = await prisma.user.findUnique({ where: { id } })
+  const user = await prisma.user.findUnique({
+    where: { id },
+    include: { _count: { select: { managedDealers: true } } },
+  })
   if (!user || !MANAGEABLE.includes(user.role)) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
@@ -30,12 +34,31 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
   }
 
+  // Role change (optional) with safeguards.
+  let roleChange: Role | undefined
+  if (role && role !== user.role) {
+    if (!MANAGEABLE.includes(role)) {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    }
+    if (id === session.user.id) {
+      return NextResponse.json({ error: 'You cannot change your own role' }, { status: 400 })
+    }
+    if (user.role === 'MANAGER' && role !== 'MANAGER' && user._count.managedDealers > 0) {
+      return NextResponse.json(
+        { error: 'This manager still has dealers assigned. Reassign them before changing the role.' },
+        { status: 409 }
+      )
+    }
+    roleChange = role as Role
+  }
+
   await prisma.user.update({
     where: { id },
     data: {
       name,
       email,
       phone: phone || null,
+      ...(roleChange ? { role: roleChange } : {}),
       ...(newPassword ? { password: await bcrypt.hash(newPassword, 10) } : {}),
     },
   })

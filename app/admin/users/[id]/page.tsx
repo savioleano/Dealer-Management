@@ -31,7 +31,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
         </p>
       </div>
       <EditUserForm
-        user={{ id: user.id, name: user.name, email: user.email, phone: user.phone ?? '', role: roleLabel[user.role] }}
+        user={{ id: user.id, name: user.name, email: user.email, phone: user.phone ?? '', role: user.role }}
+        isSelf={user.id === session.user.id}
       />
     </div>
   )
