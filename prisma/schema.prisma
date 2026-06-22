@@ -52,8 +52,18 @@ model User {
   dealerId       String?
   dealer         Dealer?  @relation(fields: [dealerId], references: [id])
   managedDealers Dealer[] @relation("ManagedDealers")
+  resetTokens    PasswordResetToken[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Dealer {

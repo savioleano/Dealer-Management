@@ -17,10 +17,15 @@ export default auth((req) => {
   const isLoggedIn = !!session
 
   const isLoginPage = nextUrl.pathname === '/login'
+  // Public, auth-related pages reachable while logged out.
+  const isPublicAuthPage =
+    isLoginPage ||
+    nextUrl.pathname === '/forgot-password' ||
+    nextUrl.pathname === '/reset-password'
   const role = session?.user.role
   const home = role ? HOME[role] : '/login'
 
-  if (!isLoggedIn && !isLoginPage) {
+  if (!isLoggedIn && !isPublicAuthPage) {
     return NextResponse.redirect(new URL('/login', nextUrl))
   }
 
