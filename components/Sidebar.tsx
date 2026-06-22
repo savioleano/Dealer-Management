@@ -85,10 +85,10 @@ export default function Sidebar({ role, userName }: SidebarProps) {
   const home = homeHref[role]
 
   return (
-    <aside className="w-64 flex-shrink-0 bg-blue-950 text-white flex flex-col min-h-screen">
-      <div className="px-6 py-5 border-b border-blue-900">
-        <p className="text-xs text-blue-400 uppercase tracking-widest mb-0.5">Retail IT</p>
-        <p className="font-semibold text-sm leading-snug">Dealer Management Portal</p>
+    <aside className="w-64 flex-shrink-0 bg-white text-gray-700 border-r border-gray-200 flex flex-col min-h-screen">
+      <div className="px-6 py-5 border-b border-gray-200">
+        <p className="text-sm font-semibold uppercase tracking-widest mb-0.5 text-green-800">Retail IT</p>
+        <p className="font-medium text-sm leading-snug text-gray-900">Dealer Management Portal</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
@@ -98,8 +98,10 @@ export default function Sidebar({ role, userName }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                active ? 'bg-blue-700 text-white font-medium' : 'text-blue-200 hover:bg-blue-900 hover:text-white'
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm border-l-[3px] transition-colors ${
+                active
+                  ? 'bg-gray-100 text-green-800 font-medium border-green-700'
+                  : 'text-gray-700 border-transparent hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
               <span className="text-base">{item.icon}</span>
@@ -109,12 +111,12 @@ export default function Sidebar({ role, userName }: SidebarProps) {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-blue-900">
-        <p className="text-sm font-medium text-white truncate">{roleLabel[role]}</p>
-        <p className="text-xs text-blue-400 truncate mb-2">{userName}</p>
+      <div className="px-4 py-4 border-t border-gray-200">
+        <p className="text-sm font-medium text-gray-900 truncate">{roleLabel[role]}</p>
+        <p className="text-xs text-gray-500 truncate mb-2">{userName}</p>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="w-full text-left text-xs text-blue-300 hover:text-white transition-colors"
+          className="w-full text-left text-xs text-gray-500 hover:text-gray-900 transition-colors"
         >
           Sign out →
         </button>
