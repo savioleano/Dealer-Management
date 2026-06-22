@@ -1,7 +1,13 @@
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { isSuperAdmin } from '@/lib/access'
 import Link from 'next/link'
+import DeleteManagerButton from './DeleteManagerButton'
 
 export default async function ManageManagersPage() {
+  const session = (await auth())!
+  const canManage = isSuperAdmin(session.user.role)
+
   const managers = await prisma.user.findMany({
     where: { role: 'MANAGER' },
     include: { _count: { select: { managedDealers: true } } },
@@ -31,6 +37,7 @@ export default async function ManageManagersPage() {
               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Contact</th>
               <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Dealers</th>
+              {canManage && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -40,6 +47,12 @@ export default async function ManageManagersPage() {
                 <td className="px-4 py-3 text-gray-600">{m.email}</td>
                 <td className="px-4 py-3 text-gray-600">{m.phone ?? '—'}</td>
                 <td className="px-4 py-3 text-right text-gray-700">{m._count.managedDealers}</td>
+                {canManage && (
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <Link href={`/admin/managers/${m.id}`} className="text-xs text-blue-600 hover:underline mr-3">Edit</Link>
+                    <DeleteManagerButton id={m.id} name={m.name} dealerCount={m._count.managedDealers} />
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
