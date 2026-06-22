@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
+import { useState } from 'react'
 
 interface NavItem {
   href: string
@@ -83,11 +84,17 @@ export default function Sidebar({ role, userName }: SidebarProps) {
   const pathname = usePathname()
   const nav = navByRole[role]
   const home = homeHref[role]
+  const [logoOk, setLogoOk] = useState(true)
 
   return (
     <aside className="w-64 flex-shrink-0 bg-white text-gray-700 border-r border-gray-200 flex flex-col min-h-screen">
       <div className="px-6 py-5 border-b border-gray-200">
-        <p className="text-sm font-semibold uppercase tracking-widest mb-0.5 text-green-800">Retail IT</p>
+        {logoOk ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src="/rit-logo.png" alt="Retail IT" className="h-12 w-auto mb-2" onError={() => setLogoOk(false)} />
+        ) : (
+          <p className="text-sm font-semibold uppercase tracking-widest mb-0.5 text-green-800">Retail IT</p>
+        )}
         <p className="font-medium text-sm leading-snug text-gray-900">Dealer Management Portal</p>
       </div>
 
