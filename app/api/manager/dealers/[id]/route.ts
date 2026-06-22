@@ -49,10 +49,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     )
   }
 
-  // Uniqueness checks (exclude this dealer)
+  const loginUserId = dealer.users[0]?.id
+
+  // Uniqueness checks (exclude this dealer / its own login user)
   if (email && email !== dealer.email) {
     const taken = await prisma.dealer.findUnique({ where: { email } })
     if (taken) return NextResponse.json({ error: 'Business email already in use' }, { status: 409 })
+    // The dealer's email is also their login email — make sure no other user has it.
+    const userTaken = await prisma.user.findUnique({ where: { email } })
+    if (userTaken && userTaken.id !== loginUserId) {
+      return NextResponse.json({ error: 'A user with this email already exists' }, { status: 409 })
+    }
   }
   if (businessRegNo && businessRegNo !== dealer.businessRegNo) {
     const taken = await prisma.dealer.findUnique({ where: { businessRegNo } })
@@ -85,9 +92,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       },
     })
 
-    if (newPassword && dealer.users[0]) {
-      const hashed = await bcrypt.hash(newPassword, 10)
-      await tx.user.update({ where: { id: dealer.users[0].id }, data: { password: hashed } })
+    // Keep the dealer's login (User) in sync — email is the login, password optional.
+    if (loginUserId) {
+      const userData: { email?: string; password?: string } = {}
+      if (email && email !== dealer.email) userData.email = email
+      if (newPassword) userData.password = await bcrypt.hash(newPassword, 10)
+      if (Object.keys(userData).length > 0) {
+        await tx.user.update({ where: { id: loginUserId }, data: userData })
+      }
     }
   })
 
