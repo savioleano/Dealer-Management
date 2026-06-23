@@ -37,16 +37,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
       <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-8">
+        <div className="flex flex-col items-center mb-8">
           {logoOk ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src="/rit-logo.png" alt="Retail IT" className="h-16 w-auto" onError={() => setLogoOk(false)} />
           ) : (
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-800">RETAIL IT</p>
-              <p className="text-sm text-gray-500">Dealer Management Portal</p>
-            </div>
+            <p className="text-2xl font-bold text-green-800">RETAIL IT</p>
           )}
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 mt-3">Dealer Management Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
