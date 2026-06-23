@@ -35,7 +35,7 @@ const LEGEND = [
 
 export default function DealerMap({ dealers }: { dealers: DealerPin[] }) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  const { isLoaded } = useJsApiLoader({ id: 'gmaps-script', googleMapsApiKey: apiKey ?? '' })
+  const { isLoaded, loadError } = useJsApiLoader({ id: 'gmaps-script', googleMapsApiKey: apiKey ?? '' })
   const [activeId, setActiveId] = useState<string | null>(null)
 
   if (!apiKey) {
@@ -45,6 +45,21 @@ export default function DealerMap({ dealers }: { dealers: DealerPin[] }) {
           <p className="font-medium text-amber-800">Google Maps API key not configured</p>
           <p className="text-sm text-amber-700 mt-1">
             Set <code className="bg-amber-100 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> in your environment, then redeploy.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex h-[70vh] items-center justify-center rounded-xl bg-red-50 border border-red-200 text-center px-6">
+        <div className="max-w-md">
+          <p className="font-medium text-red-800">Couldn&apos;t load Google Maps</p>
+          <p className="text-sm text-red-700 mt-1">
+            The map script (maps.googleapis.com) was blocked. This is usually an ad/privacy blocker
+            extension or a network/firewall on this computer. Try disabling blockers for this site,
+            or open it in a different browser. The dealer list below still works.
           </p>
         </div>
       </div>
